@@ -1,68 +1,58 @@
 #!/usr/bin/python3
-
-"""N queens puzzle"""
-
 import sys
 
 
-def ChessBoard(n: int):
-    """Program that solves the N queens problem with
-    Backtracking algorithm
-    Args:
-        n (int): no of non-attacking queens to place on board.
-                (n)^2 determines the size of chess board
-    Return:
-        List[List[int]]: List of list of rows & columns of where
-        queens are placed.
-    """
-    result = list()
+def is_safe(board, row, col, N):
+    # Check if there is a queen in the same column
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
 
-    def checkBoard(row, col, col_in_row):
-        """Checks if queen can be placed without attacking other queens"""
-        for r in range(row):
-            if row - r == abs(col - col_in_row[r]):
-                return False
-        return True
+    # Check upper left diagonal
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
 
-    def saveBoard(row, cols, col_in_row):
-        """Saves the current state (position of the queens) of the board"""
-        if row == n:
-            con_result = []
-            for r in range(n):
-                temp_result = []
-                for c in range(n):
-                    if c == col_in_row[r]:
-                        temp_result.append(r)
-                        temp_result.append(col_in_row[r])
-                        con_result.append(temp_result)
-                if len(con_result) == n:
-                    result.append(con_result)
-                    temp_result, con_result = [], []
+    # Check upper right diagonal
+    for i, j in zip(range(row, -1, -1), range(col, N)):
+        if board[i][j] == 1:
+            return False
 
-    def placeQueen(row, cols, col_in_row):
-        """Places N non-attacking queens on an N * N chessboard"""
-        saveBoard(row, cols, col_in_row)
-        for col in range(n):
-            if cols[col] == 0 and checkBoard(row, col, col_in_row):
-                cols[col] = 1
-                col_in_row[row] = col
-                placeQueen(row + 1, cols, col_in_row)
-                cols[col] = 0
-    placeQueen(0, [0]*n, [0]*n)
-    return result
+    return True
 
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: nqueens N")
-        sys.exit(1)
-    if sys.argv[1].isdigit() is False:
-        print("N must be a number")
-        sys.exit(1)
-    if int(sys.argv[1]) < 4:
+def solve_nqueens(N):
+    if N < 4:
         print("N must be at least 4")
         sys.exit(1)
 
-    nqueens = ChessBoard(int(sys.argv[1]))
-    for quin in nqueens:
-        print(quin)
+    def solve(board, row):
+        if row == N:
+            # Print the solution
+            for i in range(N):
+                print("".join(['Q' if board[i][j] == 1 else '.' for j in range(N)]))
+            print()
+            return
+
+        for col in range(N):
+            if is_safe(board, row, col, N):
+                board[row][col] = 1
+                solve(board, row + 1)
+                board[row][col] = 0
+
+    board = [[0 for _ in range(N)] for _ in range(N)]
+    solve(board, 0)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: nqueens N")
+        sys.exit(1)
+
+    try:
+        N = int(sys.argv[1])
+    except ValueError:
+        print("N must be a number")
+        sys.exit(1)
+
+    solve_nqueens(N)
